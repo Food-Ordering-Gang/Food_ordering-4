@@ -1,0 +1,86 @@
+﻿@using MySql.Data.MySqlClient;
+@model List<CartItem>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cart</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            color: #588c7e;
+            font-family: monospace;
+            font-size: 25px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #588c7e;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2
+        }
+    </style>
+</head>
+<body>
+    @{
+        // 获取购物车数据
+        var connectionString = "Server=localhost;Database=utslover;Uid=root;Pwd=33258699;";
+        var cartItems = new List<CartItem>();
+
+        using (var connection = new MySqlConnection(connectionString))
+        {
+            connection.Open();
+            var query = "SELECT * FROM cartitems ORDER BY Id DESC"; // 根据 ID 倒序排序
+
+            using (var command = new MySqlCommand(query, connection))
+            {
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var item = new CartItem();
+                        item.Id = reader.GetInt32("Id");
+                        item.Quantity = reader.GetInt32("Quantity");
+                        item.UserId = reader.GetString("UserId");
+                        item.Price = reader.GetDecimal("Price");
+                        item.ProductName = reader.GetString("ProductName");
+                        item.ProductId = reader.GetInt32("ProductId");
+                        item.ImagePath = reader.GetString("ImagePath");
+                        cartItems.Add(item);
+                    }
+                }
+            }
+        }
+    }
+    <form method="get" action="/">
+        <button type="submit">Index.cshtml</button>
+    </form>
+    <form method="post" action="/checkout">
+        <button type="submit">Checkout</button>
+    </form>
+    <table>
+        <tr>
+            <th>Product Name</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+        </tr>
+        @foreach (var item in cartItems)
+        {
+            <tr>
+                <td>@item.ProductName</td>
+                <td>@item.Price</td>
+                <td>@item.Quantity</td>
+                <td>@(item.Price * item.Quantity)</td>
+            </tr>
+        }
+    </table>
+
+
+   
+</body>
+</html>
